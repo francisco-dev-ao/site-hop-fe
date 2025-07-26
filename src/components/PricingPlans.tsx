@@ -2,57 +2,83 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getProducts, Product } from "@/lib/wisecp";
+import { useToast } from "@/hooks/use-toast";
 
 const PricingPlans = () => {
-  const plans = [
-    {
-      name: "Básico",
-      price: "9,90",
-      description: "Ideal para sites pessoais",
-      features: [
-        "1 Site",
-        "5GB de Armazenamento",
-        "Transferência Ilimitada",
-        "SSL Grátis",
-        "Suporte por Email"
-      ],
-      popular: false
-    },
-    {
-      name: "Profissional",
-      price: "19,90",
-      description: "Perfeito para pequenas empresas",
-      features: [
-        "5 Sites",
-        "20GB de Armazenamento",
-        "Transferência Ilimitada",
-        "SSL Grátis",
-        "Backup Diário",
-        "Suporte 24/7"
-      ],
-      popular: true
-    },
-    {
-      name: "Empresarial",
-      price: "39,90",
-      description: "Para projetos de grande escala",
-      features: [
-        "Sites Ilimitados",
-        "100GB de Armazenamento",
-        "Transferência Ilimitada",
-        "SSL Grátis",
-        "Backup Diário",
-        "Suporte Prioritário",
-        "CDN Grátis"
-      ],
-      popular: false
-    }
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const handlePlanSelect = (planName: string) => {
-    // Aqui você enviaria os dados para o WiseCP
-    console.log("Plano selecionado:", planName);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await getProducts();
+        if (response.status === 'success') {
+          setProducts(response.data);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar produtos:', error);
+        // Fallback para planos estáticos se a API falhar
+        setProducts([
+          {
+            id: 1,
+            name: "Básico",
+            description: "Ideal para sites pessoais",
+            price: 9.90,
+            currency: "BRL",
+            group_id: 1,
+            type: "hosting"
+          },
+          {
+            id: 2,
+            name: "Profissional", 
+            description: "Perfeito para pequenas empresas",
+            price: 19.90,
+            currency: "BRL",
+            group_id: 1,
+            type: "hosting"
+          },
+          {
+            id: 3,
+            name: "Empresarial",
+            description: "Para projetos de grande escala", 
+            price: 39.90,
+            currency: "BRL",
+            group_id: 1,
+            type: "hosting"
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handlePlanSelect = (product: Product) => {
+    // Redirecionar para página de checkout ou abrir modal
+    toast({
+      title: "Plano Selecionado",
+      description: `Você escolheu o plano ${product.name}. Redirecionando para checkout...`,
+    });
+    
+    // Aqui você pode redirecionar para uma página de checkout
+    // ou abrir um modal para coletar dados do cliente
+    console.log("Produto selecionado:", product);
   };
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-gradient-hero">
+        <div className="container mx-auto px-4 text-center">
+          <div className="text-xl">Carregando planos...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-gradient-hero">
@@ -68,14 +94,14 @@ const PricingPlans = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
+          {products.map((product, index) => (
             <Card 
-              key={index} 
+              key={product.id} 
               className={`relative bg-gradient-card shadow-card-hosting border-0 ${
-                plan.popular ? 'scale-105 shadow-hosting' : ''
+                index === 1 ? 'scale-105 shadow-hosting' : ''
               }`}
             >
-              {plan.popular && (
+              {index === 1 && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-white border-0">
                   <Star className="w-3 h-3 mr-1" />
                   Mais Popular
@@ -83,13 +109,13 @@ const PricingPlans = () => {
               )}
               
               <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <CardTitle className="text-2xl">{product.name}</CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  {plan.description}
+                  {product.description}
                 </CardDescription>
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-hosting-blue">
-                    R$ {plan.price}
+                    R$ {product.price.toFixed(2).replace('.', ',')}
                   </span>
                   <span className="text-muted-foreground">/mês</span>
                 </div>
@@ -97,23 +123,34 @@ const PricingPlans = () => {
 
               <CardContent>
                 <ul className="space-y-3">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center space-x-3">
-                      <Check className="w-4 h-4 text-hosting-success flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
+                  {/* Features básicos para todos os planos */}
+                  <li className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-hosting-success flex-shrink-0" />
+                    <span className="text-sm">SSL Grátis</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-hosting-success flex-shrink-0" />
+                    <span className="text-sm">Suporte 24/7</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-hosting-success flex-shrink-0" />
+                    <span className="text-sm">Backup Diário</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-hosting-success flex-shrink-0" />
+                    <span className="text-sm">Transferência Ilimitada</span>
+                  </li>
                 </ul>
               </CardContent>
 
               <CardFooter>
                 <Button 
                   className={`w-full ${
-                    plan.popular 
+                    index === 1
                       ? 'bg-gradient-primary hover:opacity-90' 
                       : 'variant-outline hover:bg-primary hover:text-primary-foreground'
                   }`}
-                  onClick={() => handlePlanSelect(plan.name)}
+                  onClick={() => handlePlanSelect(product)}
                 >
                   Escolher Plano
                 </Button>

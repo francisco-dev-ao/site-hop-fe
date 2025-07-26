@@ -19,9 +19,11 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
+            <a href="/" className="text-muted-foreground hover:text-primary transition-colors">Início</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Hospedagem</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Domínios</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">VPS</a>
+            <a href="/examples" className="text-muted-foreground hover:text-primary transition-colors">API Examples</a>
             <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Suporte</a>
           </nav>
 
@@ -53,9 +55,11 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
+              <a href="/" className="text-muted-foreground hover:text-primary transition-colors">Início</a>
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Hospedagem</a>
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Domínios</a>
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">VPS</a>
+              <a href="/examples" className="text-muted-foreground hover:text-primary transition-colors">API Examples</a>
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Suporte</a>
               <div className="flex flex-col space-y-2 pt-4">
                 <Button variant="ghost" size="sm">

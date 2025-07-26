@@ -2,13 +2,51 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Check } from "lucide-react";
 import { useState } from "react";
+import { checkDomainAvailability } from "@/lib/wisecp";
+import { useToast } from "@/hooks/use-toast";
 
 const Hero = () => {
   const [domain, setDomain] = useState("");
+  const [isChecking, setIsChecking] = useState(false);
+  const { toast } = useToast();
 
-  const handleDomainCheck = () => {
-    // Aqui você integraria com o WiseCP para verificar disponibilidade
-    console.log("Verificando domínio:", domain);
+  const handleDomainCheck = async () => {
+    if (!domain) {
+      toast({
+        title: "Erro",
+        description: "Por favor, digite um domínio válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsChecking(true);
+    try {
+      const result = await checkDomainAvailability(domain, 'com');
+      
+      if (result.status === 'success') {
+        if (result.data.available) {
+          toast({
+            title: "Domínio Disponível! 🎉",
+            description: `${result.data.domain} está disponível para registro`,
+          });
+        } else {
+          toast({
+            title: "Domínio Indisponível",
+            description: `${result.data.domain} não está disponível`,
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Erro na consulta",
+        description: "Não foi possível verificar o domínio. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   return (
@@ -49,9 +87,10 @@ const Hero = () => {
               </div>
               <Button 
                 onClick={handleDomainCheck}
+                disabled={isChecking}
                 className="h-12 px-6 bg-gradient-primary hover:opacity-90"
               >
-                Verificar
+                {isChecking ? "Verificando..." : "Verificar"}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
